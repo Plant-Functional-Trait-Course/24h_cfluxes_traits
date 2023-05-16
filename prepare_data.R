@@ -56,6 +56,68 @@ flux_angle <- flux %>%
   )
 
 
+#List of turfs
+
+metaturf <- metaturf %>% filter(turfID %in% flux$turfID)
+
+#Import community data
+
+community_incline <- read.csv("raw_data/turf_community_Incline.csv", sep = ";")
+community_3d <- read.csv("raw_data/turf_community_Three-D.csv", sep = ";")
+
+community_data <- rbind(community_incline, community_3d)
+
+as_tibble(community_data)
+
+#Finding data from the turfs that we are interested in
+
+community_data <- community_data %>% filter(turfID %in% metaturf$turfID)
+
+#Finding the most current plant community data
+
+community_data <- community_data %>% group_by(turfID) %>% filter(year == max(year, na.rm=TRUE))
+
+#Import trait data
+
+library(dataDownloader)
+# get_file(node = "fcbw4",
+#          file = "PFTC6_leaf_area_2022.csv",
+#          path = "clean_data",
+#          remote_path = "raw_data/trait_raw_data")
+# 
+# get_file(node = "fcbw4",
+#          file = "PFTC6_clean_leaf_traits_2022.csv",
+#          path = "clean_data",
+#          remote_path = "trait_data")
+# 
+# get_file(node = "pk4bg",
+#          file = "THREE-D_Cover_2019_2020.csv",
+#          path = "clean_data",
+#          remote_path = "Vegetation")
+
+# I don't know how to import data from an sqlite file in R
+# These data are from https://osf.io/6tu4p 
+
+#Read in data ----
+## Traits ----
+leaf.area <- read.csv("clean_data/PFTC6_leaf_area_2022.csv") %>%
+  select(ID, leaf_area)
+
+# traits = read.csv("clean_data/PFTC6_clean_leaf_traits_2022.csv") %>%
+#   separate(plotID, into = c("origin", "trt", "destination"), sep = " ", remove = FALSE) %>%
+#   left_join(leaf.area) %>%
+#   mutate(sla = leaf_area/wet_mass_g)
+
+traits = read.csv("clean_data/PFTC6_clean_leaf_traits_2022.csv", header = TRUE) %>%
+  mutate(sla = leaf_area_total_cm2/wet_mass_total_g)
+
+
+#Finding trait data from the turfs that we are interested in
+#some plots are missing turfIDs
+
+traits <- traits %>% filter(turfID %in% metaturf$turfID)
+
+#Calculating CWM
 
 
 
